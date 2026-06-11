@@ -3,7 +3,6 @@ import { persist } from 'zustand/middleware';
 
 interface User {
   name: string;
-  role: 'officer';
 }
 
 interface AuthState {
@@ -24,7 +23,7 @@ export const useAuthStore = create<AuthState>()(
 
           set({
             isAuthenticated: true,
-            user: { name: 'Sabda Avicenna', role: 'officer' },
+            user: { name: 'Sabda Avicenna' },
           });
 
           // Set cookie untuk middleware
