@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
@@ -93,6 +94,8 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }:
       });
       setErrors({});
       onOpenChange(false);
+    } else {
+      toast.error('Harap lengkapi semua field yang diperlukan');
     }
   };
 

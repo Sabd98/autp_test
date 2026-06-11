@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/app/components/ui/button';
 import { Card } from '@/app/components/ui/card';
 import { useClaimStore } from '@/app/store/useClaimStore';
@@ -51,14 +52,17 @@ export default function ClaimsPage() {
   const handleFormSubmit = (data: Omit<ClaimAUTP, 'id' | 'submissionDate'> | Partial<ClaimAUTP>) => {
     if (editingClaim) {
       updateClaim(editingClaim.id, data);
+      toast.success('Klaim berhasil diperbarui');
     } else {
       addClaim(data as Omit<ClaimAUTP, 'id' | 'submissionDate'>);
+      toast.success('Klaim berhasil ditambahkan');
     }
   };
 
   const handleDeleteConfirm = () => {
     if (deletingClaim) {
       deleteClaim(deletingClaim.id);
+      toast.success('Klaim berhasil dihapus');
       setDeleteOpen(false);
       setDeletingClaim(null);
     }
