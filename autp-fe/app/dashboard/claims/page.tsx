@@ -21,6 +21,7 @@ export default function ClaimsPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editingClaim, setEditingClaim] = useState<ClaimAUTP | null>(null);
   const [deletingClaim, setDeletingClaim] = useState<ClaimAUTP | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     fetchClaims(filters);
@@ -28,11 +29,13 @@ export default function ClaimsPage() {
 
   const handleAddClick = () => {
     setEditingClaim(null);
+    setFieldErrors({});
     setFormOpen(true);
   };
 
   const handleEditClick = (claim: ClaimAUTP) => {
     setEditingClaim(claim);
+    setFieldErrors({});
     setFormOpen(true);
   };
 
@@ -42,23 +45,25 @@ export default function ClaimsPage() {
   };
 
   const handleFormSubmit = async (data: Omit<ClaimAUTP, 'id' | 'submissionDate'> | Partial<ClaimAUTP>) => {
+    setFieldErrors({});
     try {
       if (editingClaim) {
         await updateClaim(editingClaim.id, data);
         toast.success('Klaim berhasil diperbarui');
+        setFormOpen(false);
       } else {
         await createClaim(data as Omit<ClaimAUTP, 'id'>);
         toast.success('Klaim berhasil ditambahkan');
+        setFormOpen(false);
       }
     } catch (err) {
       const apiErr = err instanceof axios.AxiosError ? (err.response?.data as ApiErrorResponse) : null;
       if (apiErr?.errors) {
-        Object.entries(apiErr.errors).forEach(([field, msgs]) => {
-          toast.error(`${field}: ${msgs[0]}`);
-        });
+        setFieldErrors(apiErr.errors);
       } else {
         toast.error(apiErr?.message || 'Terjadi kesalahan');
       }
+      throw err;
     }
   };
 
@@ -145,6 +150,7 @@ export default function ClaimsPage() {
         onSubmit={handleFormSubmit}
         initialData={editingClaim || undefined}
         isEdit={!!editingClaim}
+        fieldErrors={fieldErrors}
       />
 
       <ClaimDeleteDialog

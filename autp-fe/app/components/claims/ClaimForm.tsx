@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
@@ -15,13 +14,14 @@ import { FAILURE_CAUSES, FORM_CLAIM_STATUSES, PLANTING_PERIODS } from '@/app/lib
 interface ClaimFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: Omit<ClaimAUTP, 'id' | 'submissionDate'> | Partial<ClaimAUTP>) => void;
+  onSubmit: (data: Omit<ClaimAUTP, 'id' | 'submissionDate'> | Partial<ClaimAUTP>) => Promise<void>;
   initialData?: Partial<ClaimAUTP>;
   isEdit?: boolean;
+  fieldErrors?: Record<string, string[]>;
 }
 
-export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }: ClaimFormProps) {
-  const [errors, setErrors] = useState<Record<string, string>>({});
+export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit, fieldErrors = {} }: ClaimFormProps) {
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<ClaimAUTP>>({
     farmerName: '',
     farmerNIK: '',
@@ -47,32 +47,15 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }:
     }
   }, [initialData]);
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.farmerName?.trim()) newErrors.farmerName = 'Nama petani diperlukan';
-    if (!formData.farmerNIK?.trim()) newErrors.farmerNIK = 'NIK petani diperlukan';
-    if (!formData.certificateNumber?.trim()) newErrors.certificateNumber = 'Nomor sertifikat diperlukan';
-    if (!formData.plotVillage?.trim()) newErrors.plotVillage = 'Desa diperlukan';
-    if (!formData.plotDistrict?.trim()) newErrors.plotDistrict = 'Kecamatan diperlukan';
-    if (!formData.plotRegency?.trim()) newErrors.plotRegency = 'Kabupaten diperlukan';
-    if (!formData.totalInsuredArea || formData.totalInsuredArea <= 0) {
-      newErrors.totalInsuredArea = 'Luas lahan harus > 0';
-    }
-    if (!formData.failedLandArea || formData.failedLandArea <= 0) {
-      newErrors.failedLandArea = 'Luas gagal harus > 0';
-    }
-    if (formData.failedLandArea! > formData.totalInsuredArea!) {
-      newErrors.failedLandArea = 'Luas gagal tidak boleh melebihi luas lahan diasuransikan';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const getFieldError = (fieldName: string): string | undefined => {
+    const errors = fieldErrors[fieldName];
+    return errors?.[0];
   };
 
-  const handleSubmit = () => {
-    if (validate()) {
-      onSubmit(formData);
+  const handleSubmit = async () => {
+    try {
+      setIsLoading(true);
+      await onSubmit(formData);
       setFormData({
         farmerName: '',
         farmerNIK: '',
@@ -90,10 +73,11 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }:
         surveyNotes: '',
         compensationAmount: 0,
       });
-      setErrors({});
       onOpenChange(false);
-    } else {
-      toast.error('Harap lengkapi semua field yang diperlukan');
+    } catch (error) {
+      // Error handling done in parent, just show loading state
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -117,9 +101,9 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }:
                   id="farmerName"
                   value={formData.farmerName || ''}
                   onChange={(e) => setFormData({ ...formData, farmerName: e.target.value })}
-                  className={errors.farmerName ? 'border-red-500' : ''}
+                  className={getFieldError('farmerName') ? 'border-red-500' : ''}
                 />
-                {errors.farmerName && <p className="text-xs text-red-500 mt-1">{errors.farmerName}</p>}
+                {getFieldError('farmerName') && <p className="text-xs text-red-500 mt-1">{getFieldError('farmerName')}</p>}
               </div>
               <div>
                 <Label className='mb-2' htmlFor="farmerNIK">NIK Petani *</Label>
@@ -127,9 +111,9 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }:
                   id="farmerNIK"
                   value={formData.farmerNIK || ''}
                   onChange={(e) => setFormData({ ...formData, farmerNIK: e.target.value })}
-                  className={errors.farmerNIK ? 'border-red-500' : ''}
+                  className={getFieldError('farmerNIK') ? 'border-red-500' : ''}
                 />
-                {errors.farmerNIK && <p className="text-xs text-red-500 mt-1">{errors.farmerNIK}</p>}
+                {getFieldError('farmerNIK') && <p className="text-xs text-red-500 mt-1">{getFieldError('farmerNIK')}</p>}
               </div>
             </div>
           </div>
@@ -145,9 +129,9 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }:
                   id="certificateNumber"
                   value={formData.certificateNumber || ''}
                   onChange={(e) => setFormData({ ...formData, certificateNumber: e.target.value })}
-                  className={errors.certificateNumber ? 'border-red-500' : ''}
+                  className={getFieldError('certificateNumber') ? 'border-red-500' : ''}
                 />
-                {errors.certificateNumber && <p className="text-xs text-red-500 mt-1">{errors.certificateNumber}</p>}
+                {getFieldError('certificateNumber') && <p className="text-xs text-red-500 mt-1">{getFieldError('certificateNumber')}</p>}
               </div>
               <div>
                 <Label className='mb-2' htmlFor="plantingPeriod">Musim Tanam</Label>
@@ -178,9 +162,9 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }:
                   id="plotVillage"
                   value={formData.plotVillage || ''}
                   onChange={(e) => setFormData({ ...formData, plotVillage: e.target.value })}
-                  className={errors.plotVillage ? 'border-red-500' : ''}
+                  className={getFieldError('plotVillage') ? 'border-red-500' : ''}
                 />
-                {errors.plotVillage && <p className="text-xs text-red-500 mt-1">{errors.plotVillage}</p>}
+                {getFieldError('plotVillage') && <p className="text-xs text-red-500 mt-1">{getFieldError('plotVillage')}</p>}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -189,9 +173,9 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }:
                     id="plotDistrict"
                     value={formData.plotDistrict || ''}
                     onChange={(e) => setFormData({ ...formData, plotDistrict: e.target.value })}
-                    className={errors.plotDistrict ? 'border-red-500' : ''}
+                    className={getFieldError('plotDistrict') ? 'border-red-500' : ''}
                   />
-                  {errors.plotDistrict && <p className="text-xs text-red-500 mt-1">{errors.plotDistrict}</p>}
+                  {getFieldError('plotDistrict') && <p className="text-xs text-red-500 mt-1">{getFieldError('plotDistrict')}</p>}
                 </div>
                 <div>
                   <Label className='mb-2' htmlFor="plotRegency">Kabupaten/Kota *</Label>
@@ -199,9 +183,9 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }:
                     id="plotRegency"
                     value={formData.plotRegency || ''}
                     onChange={(e) => setFormData({ ...formData, plotRegency: e.target.value })}
-                    className={errors.plotRegency ? 'border-red-500' : ''}
+                    className={getFieldError('plotRegency') ? 'border-red-500' : ''}
                   />
-                  {errors.plotRegency && <p className="text-xs text-red-500 mt-1">{errors.plotRegency}</p>}
+                  {getFieldError('plotRegency') && <p className="text-xs text-red-500 mt-1">{getFieldError('plotRegency')}</p>}
                 </div>
               </div>
             </div>
@@ -221,9 +205,9 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }:
                     step="0.01"
                     value={formData.totalInsuredArea || ''}
                     onChange={(e) => setFormData({ ...formData, totalInsuredArea: parseFloat(e.target.value) || 0 })}
-                    className={errors.totalInsuredArea ? 'border-red-500' : ''}
+                    className={getFieldError('totalInsuredArea') ? 'border-red-500' : ''}
                   />
-                  {errors.totalInsuredArea && <p className="text-xs text-red-500 mt-1">{errors.totalInsuredArea}</p>}
+                  {getFieldError('totalInsuredArea') && <p className="text-xs text-red-500 mt-1">{getFieldError('totalInsuredArea')}</p>}
                 </div>
                 <div>
                   <Label className='mb-2' htmlFor="failedLandArea">Luas Gagal Panen (ha) *</Label>
@@ -233,9 +217,9 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }:
                     step="0.01"
                     value={formData.failedLandArea || ''}
                     onChange={(e) => setFormData({ ...formData, failedLandArea: parseFloat(e.target.value) || 0 })}
-                    className={errors.failedLandArea ? 'border-red-500' : ''}
+                    className={getFieldError('failedLandArea') ? 'border-red-500' : ''}
                   />
-                  {errors.failedLandArea && <p className="text-xs text-red-500 mt-1">{errors.failedLandArea}</p>}
+                  {getFieldError('failedLandArea') && <p className="text-xs text-red-500 mt-1">{getFieldError('failedLandArea')}</p>}
                 </div>
               </div>
               <div>
@@ -320,10 +304,12 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }:
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
             Batal
           </Button>
-          <Button onClick={handleSubmit}>{isEdit ? 'Simpan Perubahan' : 'Buat Klaim'}</Button>
+          <Button onClick={handleSubmit} disabled={isLoading}>
+            {isLoading ? 'Memproses...' : isEdit ? 'Simpan Perubahan' : 'Buat Klaim'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
