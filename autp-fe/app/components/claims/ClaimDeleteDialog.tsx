@@ -1,8 +1,16 @@
-'use client';
+"use client";
 
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
-import { Button } from '@/app/components/ui/button';
-import { ClaimAUTP } from '@/app/types/claim';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/app/components/ui/dialog";
+import { Button } from "@/app/components/ui/button";
+import { ClaimAUTP } from "@/app/types/claim";
+import { Spinner } from "../ui/spinner";
 
 interface ClaimDeleteDialogProps {
   open: boolean;
@@ -12,7 +20,13 @@ interface ClaimDeleteDialogProps {
   isLoading?: boolean;
 }
 
-export function ClaimDeleteDialog({ open, onOpenChange, claim, onConfirm, isLoading }: ClaimDeleteDialogProps) {
+export function ClaimDeleteDialog({
+  open,
+  onOpenChange,
+  claim,
+  onConfirm,
+  isLoading,
+}: ClaimDeleteDialogProps) {
   if (!claim) return null;
 
   return (
@@ -21,7 +35,8 @@ export function ClaimDeleteDialog({ open, onOpenChange, claim, onConfirm, isLoad
         <DialogHeader>
           <DialogTitle>Hapus Klaim</DialogTitle>
           <DialogDescription>
-            Apakah Anda yakin ingin menghapus klaim ini? Tindakan ini tidak dapat dibatalkan.
+            Apakah Anda yakin ingin menghapus klaim ini? Tindakan ini tidak
+            dapat dibatalkan.
           </DialogDescription>
         </DialogHeader>
 
@@ -30,16 +45,32 @@ export function ClaimDeleteDialog({ open, onOpenChange, claim, onConfirm, isLoad
             <span className="font-medium">Nama Petani:</span> {claim.farmerName}
           </p>
           <p className="text-sm">
-            <span className="font-medium">No. Sertifikat:</span> {claim.certificateNumber}
+            <span className="font-medium">No. Sertifikat:</span>{" "}
+            {claim.certificateNumber}
           </p>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isLoading}
+          >
             Batal
           </Button>
-          <Button variant="destructive" onClick={onConfirm} disabled={isLoading}>
-            {isLoading ? 'Menghapus...' : 'Hapus'}
+          <Button
+            variant="destructive"
+            onClick={onConfirm}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Spinner data-icon="inline-start" />
+                Menghapus...
+              </>
+            ) : (
+              "Hapus"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

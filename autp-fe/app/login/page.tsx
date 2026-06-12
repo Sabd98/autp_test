@@ -13,6 +13,7 @@ import {
 import { Button } from "@/app/components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
+import { Spinner } from "../components/ui/spinner";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -120,7 +121,10 @@ export default function LoginPage() {
             className="w-full bg-jasindo hover:bg-[oklch(0.33_0.11_230)] text-white font-medium"
             disabled={isLoading}
           >
-            {isLoading ? "Sedang Masuk..." : "Masuk"}
+            {isLoading ? (<>
+            <Spinner data-icon="inline-start" />
+            Sedang Masuk...
+            </>) : "Masuk"}
           </Button>
         </form>
       </CardContent>

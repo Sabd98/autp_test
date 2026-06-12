@@ -1,8 +1,16 @@
-'use client';
+"use client";
 
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
-import { Button } from '@/app/components/ui/button';
-import { UserAUTP } from '@/app/types/user';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/app/components/ui/dialog";
+import { Button } from "@/app/components/ui/button";
+import { UserAUTP } from "@/app/types/user";
+import { Spinner } from "../ui/spinner";
 
 interface UserDeleteDialogProps {
   open: boolean;
@@ -12,7 +20,13 @@ interface UserDeleteDialogProps {
   isLoading?: boolean;
 }
 
-export function UserDeleteDialog({ open, onOpenChange, user, onConfirm, isLoading }: UserDeleteDialogProps) {
+export function UserDeleteDialog({
+  open,
+  onOpenChange,
+  user,
+  onConfirm,
+  isLoading,
+}: UserDeleteDialogProps) {
   if (!user) return null;
 
   return (
@@ -21,7 +35,8 @@ export function UserDeleteDialog({ open, onOpenChange, user, onConfirm, isLoadin
         <DialogHeader>
           <DialogTitle>Hapus Pengguna</DialogTitle>
           <DialogDescription>
-            Apakah Anda yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat dibatalkan.
+            Apakah Anda yakin ingin menghapus pengguna ini? Tindakan ini tidak
+            dapat dibatalkan.
           </DialogDescription>
         </DialogHeader>
 
@@ -35,11 +50,26 @@ export function UserDeleteDialog({ open, onOpenChange, user, onConfirm, isLoadin
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isLoading}
+          >
             Batal
           </Button>
-          <Button variant="destructive" onClick={onConfirm} disabled={isLoading}>
-            {isLoading ? 'Menghapus...' : 'Hapus'}
+          <Button
+            variant="destructive"
+            onClick={onConfirm}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Spinner data-icon="inline-start" />
+                Menghapus...
+              </>
+            ) : (
+              "Hapus"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

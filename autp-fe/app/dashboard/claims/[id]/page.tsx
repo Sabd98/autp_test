@@ -14,6 +14,7 @@ import { ClaimForm } from '@/app/components/claims/ClaimForm';
 import { ClaimAUTP } from '@/app/types/claim';
 import { ApiErrorResponse } from '@/app/types/api';
 import axios from 'axios';
+import { Spinner } from '@/app/components/ui/spinner';
 
 const statusVariants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   Pending: 'secondary',
@@ -55,7 +56,7 @@ export default function ClaimDetailPage() {
           <ArrowLeft size={16} className="mr-2" /> Kembali
         </Button>
         <div className="text-center py-12 text-muted-foreground">
-          <p>Loading...</p>
+          <Spinner data-icon="inline" className="mx-auto mb-4" />
         </div>
       </div>
     );
