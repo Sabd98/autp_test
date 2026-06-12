@@ -60,12 +60,22 @@ export default function Header({
             )}
           </Button>
           <div className="flex items-center gap-2">
-            <Image
+            {isMobile ? (
+             <Image
+              src="/jasindo_logo.png"
+              width={40}
+              height={40}
+              alt="Logo"
+            />
+            ) : (
+              <Image
               src="/img_logo_jasindo.png"
               width={100}
               height={100}
               alt="Picture of the author"
             />
+            )}
+          
             <span className="text-muted-foreground font-medium text-sm hidden sm:inline">
               AUTP Portal
             </span>
