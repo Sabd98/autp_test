@@ -134,7 +134,8 @@ export function ClaimTable({ claims, onEdit, onDelete, onApprove, onReject }: Cl
                           size="icon"
                           className="h-8 w-8 text-destructive hover:text-destructive"
                           onClick={() => onDelete(claim)}
-                          title="Hapus"
+                          disabled={claim.claimStatus === 'Surveyed' || claim.claimStatus === 'Pending'}
+                          title={claim.claimStatus === 'Surveyed' || claim.claimStatus === 'Pending' ? 'Tidak dapat menghapus' : 'Hapus'}
                         >
                           <Trash2 size={16} />
                         </Button>
