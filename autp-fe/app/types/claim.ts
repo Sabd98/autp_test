@@ -1,5 +1,5 @@
 export interface ClaimAUTP {
-  id: string;
+  id: number;
   farmerName: string;
   farmerNIK: string;
   certificateNumber: string;

@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/app/components/ui/textarea';
 import { Separator } from '@/app/components/ui/separator';
 import { ClaimAUTP } from '@/app/types/claim';
+import { FAILURE_CAUSES, CLAIM_STATUSES, PLANTING_PERIODS } from '@/app/lib/constants';
 
 interface ClaimFormProps {
   open: boolean;
@@ -18,9 +19,6 @@ interface ClaimFormProps {
   initialData?: Partial<ClaimAUTP>;
   isEdit?: boolean;
 }
-
-const causes = ['Banjir', 'Kekeringan', 'Hama Wereng', 'Penyakit Tanaman', 'OPT Lainnya'];
-const statuses = ['Pending', 'Surveyed', 'Approved', 'Rejected'];
 
 export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }: ClaimFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -158,8 +156,11 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }:
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="MT1">MT1</SelectItem>
-                    <SelectItem value="MT2">MT2</SelectItem>
+                    {PLANTING_PERIODS.map((period) => (
+                      <SelectItem key={period} value={period}>
+                        {period}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -244,7 +245,7 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }:
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {causes.map((cause) => (
+                    {FAILURE_CAUSES.map((cause) => (
                       <SelectItem key={cause} value={cause}>
                         {cause}
                       </SelectItem>
@@ -259,7 +260,7 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }:
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {statuses.map((status) => (
+                    {CLAIM_STATUSES.map((status) => (
                       <SelectItem key={status} value={status}>
                         {status}
                       </SelectItem>

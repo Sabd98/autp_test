@@ -1,29 +1,38 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Card } from '@/app/components/ui/card';
 import { useClaimStore } from '@/app/store/useClaimStore';
+import { claimsApi } from '@/app/api/claims';
 import { ClaimTable } from '@/app/components/claims/ClaimTable';
 import { ClaimForm } from '@/app/components/claims/ClaimForm';
 import { ClaimDeleteDialog } from '@/app/components/claims/ClaimDeleteDialog';
 import { ClaimAUTP } from '@/app/types/claim';
+import { ApiErrorResponse } from '@/app/types/api';
+import axios from 'axios';
 
 export default function ValidationPage() {
-  const updateClaim = useClaimStore((state) => state.updateClaim);
-  const deleteClaim = useClaimStore((state) => state.deleteClaim);
-  const allClaims = useClaimStore((state) => state.claims);
-
-  const claims = useMemo(
-    () => allClaims.filter(
-      (c) => c.claimStatus === 'Pending' || c.claimStatus === 'Surveyed'
-    ),
-    [allClaims]
-  );
-
+  const { updateClaim, deleteClaim } = useClaimStore();
+  const [claims, setClaims] = useState<ClaimAUTP[]>([]);
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editingClaim, setEditingClaim] = useState<ClaimAUTP | null>(null);
   const [deletingClaim, setDeletingClaim] = useState<ClaimAUTP | null>(null);
+
+  useEffect(() => {
+    const loadClaims = async () => {
+      try {
+        const pending = await claimsApi.getAll({ status: 'Pending', pageSize: 1000 });
+        const surveyed = await claimsApi.getAll({ status: 'Surveyed', pageSize: 1000 });
+        setClaims([...pending.data, ...surveyed.data]);
+      } catch (error) {
+        console.error('Failed to load claims', error);
+      }
+    };
+
+    loadClaims();
+  }, []);
 
   const handleEditClick = (claim: ClaimAUTP) => {
     setEditingClaim(claim);
@@ -35,19 +44,33 @@ export default function ValidationPage() {
     setDeleteOpen(true);
   };
 
-  const handleFormSubmit = (data: Omit<ClaimAUTP, 'id' | 'submissionDate'> | Partial<ClaimAUTP>) => {
+  const handleFormSubmit = async (data: Omit<ClaimAUTP, 'id' | 'submissionDate'> | Partial<ClaimAUTP>) => {
     if (editingClaim) {
-      updateClaim(editingClaim.id, data);
-      setFormOpen(false);
-      setEditingClaim(null);
+      try {
+        await updateClaim(editingClaim.id, data);
+        setClaims(claims.map(c => c.id === editingClaim.id ? { ...c, ...data } : c));
+        toast.success('Klaim berhasil diperbarui');
+        setFormOpen(false);
+        setEditingClaim(null);
+      } catch (err) {
+        const apiErr = err instanceof axios.AxiosError ? (err.response?.data as ApiErrorResponse) : null;
+        toast.error(apiErr?.message || 'Terjadi kesalahan');
+      }
     }
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (deletingClaim) {
-      deleteClaim(deletingClaim.id);
-      setDeleteOpen(false);
-      setDeletingClaim(null);
+      try {
+        await deleteClaim(deletingClaim.id);
+        setClaims(claims.filter(c => c.id !== deletingClaim.id));
+        toast.success('Klaim berhasil dihapus');
+        setDeleteOpen(false);
+        setDeletingClaim(null);
+      } catch (err) {
+        const apiErr = err instanceof axios.AxiosError ? (err.response?.data as ApiErrorResponse) : null;
+        toast.error(apiErr?.message || 'Terjadi kesalahan saat menghapus');
+      }
     }
   };
 

@@ -2,14 +2,18 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Edit } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/app/components/ui/button';
 import { Card, CardContent } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
 import { Separator } from '@/app/components/ui/separator';
 import { useClaimStore } from '@/app/store/useClaimStore';
-import { useState } from 'react';
+import { claimsApi } from '@/app/api/claims';
 import { ClaimForm } from '@/app/components/claims/ClaimForm';
 import { ClaimAUTP } from '@/app/types/claim';
+import { ApiErrorResponse } from '@/app/types/api';
+import axios from 'axios';
 
 const statusVariants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   Pending: 'secondary',
@@ -21,10 +25,41 @@ const statusVariants: Record<string, 'default' | 'secondary' | 'destructive' | '
 export default function ClaimDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const id = params.id as string;
-  const claim = useClaimStore((state) => state.getClaimById(id));
-  const updateClaim = useClaimStore((state) => state.updateClaim);
+  const id = Number(params.id as string);
+  const { updateClaim } = useClaimStore();
+  const [claim, setClaim] = useState<ClaimAUTP | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
+
+  useEffect(() => {
+    const loadClaim = async () => {
+      try {
+        const data = await claimsApi.getById(id);
+        setClaim(data);
+      } catch (error) {
+        console.error('Failed to load claim', error);
+        toast.error('Klaim tidak ditemukan');
+        router.push('/dashboard/claims');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadClaim();
+  }, [id, router]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Button variant="outline" size="sm" onClick={() => router.back()}>
+          <ArrowLeft size={16} className="mr-2" /> Kembali
+        </Button>
+        <div className="text-center py-12 text-muted-foreground">
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!claim) {
     return (
@@ -52,9 +87,22 @@ export default function ClaimDetailPage() {
     }).format(amount);
   };
 
-  const handleFormSubmit = (data: Omit<ClaimAUTP, 'id' | 'submissionDate'> | Partial<ClaimAUTP>) => {
-    updateClaim(id, data);
-    setFormOpen(false);
+  const handleFormSubmit = async (data: Omit<ClaimAUTP, 'id' | 'submissionDate'> | Partial<ClaimAUTP>) => {
+    try {
+      const updated = await updateClaim(id, data);
+      setClaim(updated);
+      toast.success('Klaim berhasil diperbarui');
+      setFormOpen(false);
+    } catch (err) {
+      const apiErr = err instanceof axios.AxiosError ? (err.response?.data as ApiErrorResponse) : null;
+      if (apiErr?.errors) {
+        Object.entries(apiErr.errors).forEach(([field, msgs]) => {
+          toast.error(`${field}: ${msgs[0]}`);
+        });
+      } else {
+        toast.error(apiErr?.message || 'Terjadi kesalahan');
+      }
+    }
   };
 
   return (

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
+import { FAILURE_CAUSES, CLAIM_STATUSES } from '@/app/lib/constants';
 
 interface ClaimFiltersProps {
   onSearchChange: (search: string) => void;
@@ -11,16 +12,6 @@ interface ClaimFiltersProps {
   onCauseChange: (cause: string) => void;
   onReset: () => void;
 }
-
-const causes = [
-  'Banjir',
-  'Kekeringan',
-  'Hama Wereng',
-  'Penyakit Tanaman',
-  'OPT Lainnya',
-];
-
-const statuses = ['Pending', 'Surveyed', 'Approved', 'Rejected'];
 
 export function ClaimFilters({
   onSearchChange,
@@ -56,7 +47,7 @@ export function ClaimFilters({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Semua Status</SelectItem>
-            {statuses.map((status) => (
+            {CLAIM_STATUSES.map((status) => (
               <SelectItem key={status} value={status}>
                 {status}
               </SelectItem>
@@ -70,7 +61,7 @@ export function ClaimFilters({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Semua Penyebab</SelectItem>
-            {causes.map((cause) => (
+            {FAILURE_CAUSES.map((cause) => (
               <SelectItem key={cause} value={cause}>
                 {cause}
               </SelectItem>

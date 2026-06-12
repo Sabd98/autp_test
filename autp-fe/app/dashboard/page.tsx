@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   FileText,
@@ -12,30 +13,43 @@ import { Card, CardContent } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import { useClaimStore } from "@/app/store/useClaimStore";
+import { claimsApi } from "@/app/api/claims";
+import { ClaimAUTP } from "@/app/types/claim";
 import { MonitoringCard } from "../components/dashboard/MonitoringCard";
 
 export default function DashboardPage() {
-  const claims = useClaimStore((state) => state.claims);
+  const { fetchClaims } = useClaimStore();
+  const [recentClaims, setRecentClaims] = useState<ClaimAUTP[]>([]);
+  const [stats, setStats] = useState({ total: 0, pending: 0, surveyed: 0, approved: 0, rejected: 0 });
 
-  const totalClaims = claims.length;
-  const pendingCount = claims.filter((c) => c.claimStatus === "Pending").length;
-  const surveyedCount = claims.filter(
-    (c) => c.claimStatus === "Surveyed",
-  ).length;
-  const approvedCount = claims.filter(
-    (c) => c.claimStatus === "Approved",
-  ).length;
-  const rejectedCount = claims.filter(
-    (c) => c.claimStatus === "Rejected",
-  ).length;
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const response = await claimsApi.getAll({ pageSize: 1000 });
+        const allClaims = response.data;
 
-  const recentClaims = [...claims]
-    .sort(
-      (a, b) =>
-        new Date(b.submissionDate).getTime() -
-        new Date(a.submissionDate).getTime(),
-    )
-    .slice(0, 5);
+        const newStats = {
+          total: response.meta.total,
+          pending: allClaims.filter((c) => c.claimStatus === "Pending").length,
+          surveyed: allClaims.filter((c) => c.claimStatus === "Surveyed").length,
+          approved: allClaims.filter((c) => c.claimStatus === "Approved").length,
+          rejected: allClaims.filter((c) => c.claimStatus === "Rejected").length,
+        };
+        setStats(newStats);
+
+        const recent = allClaims
+          .sort((a, b) => new Date(b.submissionDate).getTime() - new Date(a.submissionDate).getTime())
+          .slice(0, 5);
+        setRecentClaims(recent);
+
+        await fetchClaims({ page: 1, pageSize: 10 });
+      } catch (error) {
+        console.error("Failed to load dashboard", error);
+      }
+    };
+
+    loadDashboard();
+  }, [fetchClaims]);
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -62,10 +76,10 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <MonitoringCard title="Total Klaim" sum={totalClaims} Icon={FileText} />
+        <MonitoringCard title="Total Klaim" sum={stats.total} Icon={FileText} />
         <MonitoringCard
           title="Pending"
-          sum={pendingCount}
+          sum={stats.pending}
           Icon={Clock}
           textColor="text-yellow-600"
           bgColor="bg-yellow-50"
@@ -73,7 +87,7 @@ export default function DashboardPage() {
         />
         <MonitoringCard
           title="Surveyed"
-          sum={surveyedCount}
+          sum={stats.surveyed}
           Icon={ShieldAlert}
           textColor="text-blue-600"
           bgColor="bg-blue-50"
@@ -81,7 +95,7 @@ export default function DashboardPage() {
         />
         <MonitoringCard
           title="Approved"
-          sum={approvedCount}
+          sum={stats.approved}
           Icon={CheckCircle2}
           textColor="text-green-600"
           bgColor="bg-green-50"
@@ -89,7 +103,7 @@ export default function DashboardPage() {
         />
         <MonitoringCard
           title="Rejected"
-          sum={rejectedCount}
+          sum={stats.rejected}
           Icon={FileText}
           textColor="text-red-600"
           bgColor="bg-red-50"

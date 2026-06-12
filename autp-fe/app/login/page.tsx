@@ -37,7 +37,7 @@ export default function LoginPage() {
 
     const success = await login(username, password);
     if (success) {
-      router.push("/dashboard");
+      router.replace("/dashboard");
     } else {
       setError("Username atau password salah");
       setPassword("");

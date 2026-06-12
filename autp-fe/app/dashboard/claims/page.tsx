@@ -1,38 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/app/components/ui/button';
 import { Card } from '@/app/components/ui/card';
 import { useClaimStore } from '@/app/store/useClaimStore';
-import { useClaimFilter } from '@/app/hooks/useClaimFilter';
 import { ClaimFilters } from '@/app/components/claims/ClaimFilters';
 import { ClaimTable } from '@/app/components/claims/ClaimTable';
 import { ClaimForm } from '@/app/components/claims/ClaimForm';
 import { ClaimDeleteDialog } from '@/app/components/claims/ClaimDeleteDialog';
 import { Pagination } from '@/app/components/claims/Pagination';
 import { ClaimAUTP } from '@/app/types/claim';
+import { ApiErrorResponse } from '@/app/types/api';
+import axios from 'axios';
 
 export default function ClaimsPage() {
-  const { addClaim, updateClaim, deleteClaim } = useClaimStore();
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('');
-  const [cause, setCause] = useState('');
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const { claims, meta, isLoading, fetchClaims, createClaim, updateClaim, deleteClaim, setFilters, filters } = useClaimStore();
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editingClaim, setEditingClaim] = useState<ClaimAUTP | null>(null);
   const [deletingClaim, setDeletingClaim] = useState<ClaimAUTP | null>(null);
 
-  const { paginatedClaims, totalCount, totalPages } = useClaimFilter({
-    search,
-    status,
-    cause,
-    page,
-    pageSize,
-  });
+  useEffect(() => {
+    fetchClaims(filters);
+  }, []);
 
   const handleAddClick = () => {
     setEditingClaim(null);
@@ -49,30 +41,43 @@ export default function ClaimsPage() {
     setDeleteOpen(true);
   };
 
-  const handleFormSubmit = (data: Omit<ClaimAUTP, 'id' | 'submissionDate'> | Partial<ClaimAUTP>) => {
-    if (editingClaim) {
-      updateClaim(editingClaim.id, data);
-      toast.success('Klaim berhasil diperbarui');
-    } else {
-      addClaim(data as Omit<ClaimAUTP, 'id' | 'submissionDate'>);
-      toast.success('Klaim berhasil ditambahkan');
+  const handleFormSubmit = async (data: Omit<ClaimAUTP, 'id' | 'submissionDate'> | Partial<ClaimAUTP>) => {
+    try {
+      if (editingClaim) {
+        await updateClaim(editingClaim.id, data);
+        toast.success('Klaim berhasil diperbarui');
+      } else {
+        await createClaim(data as Omit<ClaimAUTP, 'id'>);
+        toast.success('Klaim berhasil ditambahkan');
+      }
+    } catch (err) {
+      const apiErr = err instanceof axios.AxiosError ? (err.response?.data as ApiErrorResponse) : null;
+      if (apiErr?.errors) {
+        Object.entries(apiErr.errors).forEach(([field, msgs]) => {
+          toast.error(`${field}: ${msgs[0]}`);
+        });
+      } else {
+        toast.error(apiErr?.message || 'Terjadi kesalahan');
+      }
     }
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (deletingClaim) {
-      deleteClaim(deletingClaim.id);
-      toast.success('Klaim berhasil dihapus');
-      setDeleteOpen(false);
-      setDeletingClaim(null);
+      try {
+        await deleteClaim(deletingClaim.id);
+        toast.success('Klaim berhasil dihapus');
+        setDeleteOpen(false);
+        setDeletingClaim(null);
+      } catch (err) {
+        const apiErr = err instanceof axios.AxiosError ? (err.response?.data as ApiErrorResponse) : null;
+        toast.error(apiErr?.message || 'Terjadi kesalahan saat menghapus');
+      }
     }
   };
 
   const handleReset = () => {
-    setSearch('');
-    setStatus('');
-    setCause('');
-    setPage(1);
+    setFilters({ search: '', status: '', cause: '' });
   };
 
   return (
@@ -89,37 +94,28 @@ export default function ClaimsPage() {
       </div>
 
       <ClaimFilters
-        onSearchChange={setSearch}
-        onStatusChange={(val) => {
-          setStatus(val);
-          setPage(1);
-        }}
-        onCauseChange={(val) => {
-          setCause(val);
-          setPage(1);
-        }}
+        onSearchChange={(search) => setFilters({ search })}
+        onStatusChange={(status) => setFilters({ status, page: 1 })}
+        onCauseChange={(cause) => setFilters({ cause, page: 1 })}
         onReset={handleReset}
       />
 
       <Card className="p-0">
         <ClaimTable
-          claims={paginatedClaims}
+          claims={claims}
           onEdit={handleEditClick}
           onDelete={handleDeleteClick}
         />
       </Card>
 
-      {totalPages > 0 && (
+      {meta && meta.totalPages > 0 && (
         <Pagination
-          currentPage={page}
-          totalPages={totalPages}
-          totalCount={totalCount}
-          pageSize={pageSize}
-          onPageChange={setPage}
-          onPageSizeChange={(size) => {
-            setPageSize(size);
-            setPage(1);
-          }}
+          currentPage={meta.page}
+          totalPages={meta.totalPages}
+          totalCount={meta.total}
+          pageSize={meta.pageSize}
+          onPageChange={(page) => setFilters({ page })}
+          onPageSizeChange={(pageSize) => setFilters({ pageSize, page: 1 })}
         />
       )}
 
