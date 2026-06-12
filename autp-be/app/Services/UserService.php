@@ -29,35 +29,7 @@ class UserService
 
     public function getAll(array $filters): array
     {
-        $query = User::query();
-
-        if (!empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('username', 'ilike', "%{$search}%")
-                  ->orWhere('name', 'ilike', "%{$search}%");
-            });
-        }
-
-        $page = $filters['page'] ?? 1;
-        $pageSize = $filters['pageSize'] ?? 10;
-
-        $total = $query->count();
-        $items = $query->offset(($page - 1) * $pageSize)
-                       ->limit($pageSize)
-                       ->get();
-
-        $totalPages = ceil($total / $pageSize);
-
-        return [
-            'data' => $items,
-            'meta' => [
-                'total' => $total,
-                'page' => $page,
-                'pageSize' => $pageSize,
-                'totalPages' => $totalPages,
-            ],
-        ];
+        return User::filter($filters);
     }
 
     public function findById(int $id): User

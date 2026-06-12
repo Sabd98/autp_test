@@ -10,7 +10,7 @@ class AuthService
 {
     public function login(string $username, string $password): array
     {
-        $user = User::where('username', $username)->first();
+        $user = User::findByUsername($username);
 
         if (!$user || !Hash::check($password, $user->password)) {
             throw new \InvalidArgumentException('Invalid credentials');
