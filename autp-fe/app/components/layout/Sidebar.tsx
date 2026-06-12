@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, FileText, ShieldAlert, Users } from 'lucide-react';
 import clsx from 'clsx';
 import { Button } from '@/app/components/ui/button';
 
@@ -16,6 +16,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard Monitoring', icon: LayoutDashboard },
   { href: '/dashboard/claims', label: 'Data Klaim AUTP', icon: FileText },
   { href: '/dashboard/validation', label: 'Validasi Klaim', icon: ShieldAlert },
+  { href: '/dashboard/users', label: 'Kelola Pengguna', icon: Users },
 ];
 
 export default function Sidebar({ isMobile, isOpen = true, onClose }: SidebarProps) {

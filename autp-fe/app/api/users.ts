@@ -28,7 +28,7 @@ export const usersApi = {
       '/users',
       payload
     );
-    return response.data.data;
+    return response.data;
   },
 
   async update(
@@ -39,10 +39,11 @@ export const usersApi = {
       `/users/${id}`,
       payload
     );
-    return response.data.data;
+    return response.data;
   },
 
   async remove(id: number) {
-    await client.delete(`/users/${id}`);
+    const response = await client.delete<{ message: string }>(`/users/${id}`);
+    return response.data;
   },
 };
