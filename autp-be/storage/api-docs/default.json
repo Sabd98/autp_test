@@ -137,6 +137,158 @@
           "404": { "description": "Not found" }
         }
       }
+    },
+    "/profile": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get authenticated user's profile",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Profile retrieved successfully" },
+          "500": { "description": "Failed to fetch profile" }
+        }
+      },
+      "put": {
+        "tags": ["Users"],
+        "summary": "Update authenticated user's profile",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "full_name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" }
+                },
+                "required": ["full_name"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Profile updated successfully" },
+          "422": { "description": "Validation error" },
+          "500": { "description": "Failed to update profile" }
+        }
+      }
+    },
+    "/profile/reset-password": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Reset password for authenticated user",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "currentPassword": { "type": "string", "format": "password" },
+                  "newPassword": { "type": "string", "format": "password" }
+                },
+                "required": ["currentPassword", "newPassword"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Password reset successfully" },
+          "422": { "description": "Invalid current password" },
+          "500": { "description": "Failed to reset password" }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "List all users",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "pageSize", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": { "description": "Users retrieved" },
+          "500": { "description": "Failed to fetch users" }
+        }
+      },
+      "post": {
+        "tags": ["Users"],
+        "summary": "Create new user",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "username": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "format": "password" },
+                  "full_name": { "type": "string" }
+                },
+                "required": ["username", "email", "password", "full_name"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User created" },
+          "422": { "description": "Validation error" },
+          "500": { "description": "Failed to create user" }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get user by ID",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": { "description": "User retrieved" },
+          "404": { "description": "User not found" }
+        }
+      },
+      "put": {
+        "tags": ["Users"],
+        "summary": "Update user",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "username": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "full_name": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User updated" },
+          "404": { "description": "User not found" },
+          "422": { "description": "Validation error" },
+          "500": { "description": "Failed to update user" }
+        }
+      },
+      "delete": {
+        "tags": ["Users"],
+        "summary": "Delete user",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "204": { "description": "User deleted" },
+          "404": { "description": "User not found" },
+          "500": { "description": "Failed to delete user" }
+        }
+      }
     }
   }
 }

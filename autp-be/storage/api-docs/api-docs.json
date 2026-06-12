@@ -163,6 +163,224 @@
           "204": {"description": "Claim deleted"}
         }
       }
+    },
+    "/profile": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get authenticated user's profile",
+        "description": "Retrieve the profile of the authenticated user",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "Profile retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {"type": "string", "example": "Profile retrieved"},
+                    "data": {
+                      "properties": {
+                        "id": {"type": "integer"},
+                        "username": {"type": "string"},
+                        "email": {"type": "string"},
+                        "full_name": {"type": "string"},
+                        "created_at": {"type": "string", "format": "date-time"},
+                        "updated_at": {"type": "string", "format": "date-time"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {"description": "Failed to fetch profile"}
+        }
+      },
+      "put": {
+        "tags": ["Users"],
+        "summary": "Update authenticated user's profile",
+        "description": "Update the profile of the authenticated user",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "full_name": {"type": "string"},
+                  "email": {"type": "string", "format": "email"}
+                },
+                "required": ["full_name"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Profile updated successfully"},
+          "422": {"description": "Validation error"},
+          "500": {"description": "Failed to update profile"}
+        }
+      }
+    },
+    "/profile/reset-password": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Reset password for authenticated user",
+        "description": "Reset the password for the authenticated user with current and new password",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "currentPassword": {"type": "string", "format": "password"},
+                  "newPassword": {"type": "string", "format": "password"}
+                },
+                "required": ["currentPassword", "newPassword"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Password reset successfully"},
+          "422": {"description": "Validation error or invalid current password"},
+          "500": {"description": "Failed to reset password"}
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "List all users with pagination",
+        "description": "Retrieve a paginated list of all users with optional search filter",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "search", "in": "query", "description": "Search by username or email", "schema": {"type": "string"}},
+          {"name": "page", "in": "query", "description": "Page number", "schema": {"type": "integer", "default": 1}},
+          {"name": "pageSize", "in": "query", "description": "Number of items per page", "schema": {"type": "integer", "default": 10}}
+        ],
+        "responses": {
+          "200": {
+            "description": "Users retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "properties": {
+                          "id": {"type": "integer"},
+                          "username": {"type": "string"},
+                          "email": {"type": "string"},
+                          "full_name": {"type": "string"},
+                          "created_at": {"type": "string", "format": "date-time"},
+                          "updated_at": {"type": "string", "format": "date-time"}
+                        }
+                      }
+                    },
+                    "meta": {
+                      "properties": {
+                        "current_page": {"type": "integer"},
+                        "per_page": {"type": "integer"},
+                        "total": {"type": "integer"},
+                        "last_page": {"type": "integer"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {"description": "Failed to fetch users"}
+        }
+      },
+      "post": {
+        "tags": ["Users"],
+        "summary": "Create a new user",
+        "description": "Create a new user account with the provided information",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "username": {"type": "string"},
+                  "email": {"type": "string", "format": "email"},
+                  "password": {"type": "string", "format": "password"},
+                  "full_name": {"type": "string"}
+                },
+                "required": ["username", "email", "password", "full_name"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "User created successfully"},
+          "422": {"description": "Validation error"},
+          "500": {"description": "Failed to create user"}
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get a specific user by ID",
+        "description": "Retrieve a single user by their ID",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {
+          "200": {"description": "User retrieved successfully"},
+          "404": {"description": "User not found"}
+        }
+      },
+      "put": {
+        "tags": ["Users"],
+        "summary": "Update a user by ID",
+        "description": "Update user information by their ID",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "username": {"type": "string"},
+                  "email": {"type": "string", "format": "email"},
+                  "full_name": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "User updated successfully"},
+          "404": {"description": "User not found"},
+          "422": {"description": "Validation error"},
+          "500": {"description": "Failed to update user"}
+        }
+      },
+      "delete": {
+        "tags": ["Users"],
+        "summary": "Delete a user by ID",
+        "description": "Delete a user account by their ID",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {
+          "204": {"description": "User deleted successfully"},
+          "404": {"description": "User not found"},
+          "500": {"description": "Failed to delete user"}
+        }
+      }
     }
   },
   "components": {

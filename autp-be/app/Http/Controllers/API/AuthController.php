@@ -19,15 +19,21 @@ class AuthController extends Controller
                 $request->validated('username'),
                 $request->validated('password')
             );
-            return response()->json($data);
+            return $this->successResponse($data, 'Login successful');
+        } catch (\InvalidArgumentException $e) {
+            return $this->errorResponse($e->getMessage(), 401);
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 401);
+            return $this->errorResponse('An error occurred during login', 500);
         }
     }
 
     public function logout(Request $request): JsonResponse
     {
-        $this->authService->logout();
-        return response()->json(['message' => 'Logged out']);
+        try {
+            $this->authService->logout();
+            return $this->successResponse(null, 'Logged out successfully');
+        } catch (\Exception $e) {
+            return $this->errorResponse('Logout failed', 500);
+        }
     }
 }

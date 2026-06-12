@@ -16,48 +16,72 @@ class ClaimController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $filters = [
-            'search' => $request->query('search'),
-            'status' => $request->query('status'),
-            'cause' => $request->query('cause'),
-            'page' => (int) $request->query('page', 1),
-            'pageSize' => (int) $request->query('pageSize', 10),
-        ];
+        try {
+            $filters = [
+                'search' => $request->query('search'),
+                'status' => $request->query('status'),
+                'cause' => $request->query('cause'),
+                'page' => (int) $request->query('page', 1),
+                'pageSize' => (int) $request->query('pageSize', 10),
+            ];
 
-        $result = $this->claimService->getAll($filters);
+            $result = $this->claimService->getAll($filters);
 
-        return response()->json([
-            'data' => ClaimResource::collection($result['data']),
-            'meta' => $result['meta'],
-        ]);
+            return response()->json([
+                'data' => ClaimResource::collection($result['data']),
+                'meta' => $result['meta'],
+            ]);
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to fetch claims', 500);
+        }
     }
 
     public function show(int $id): JsonResponse
     {
-        $claim = $this->claimService->findById($id);
-        return response()->json(new ClaimResource($claim));
+        try {
+            $claim = $this->claimService->findById($id);
+            return $this->successResponse(new ClaimResource($claim));
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+            return $this->notFoundResponse('Claim not found');
+        }
     }
 
     public function store(CreateClaimRequest $request): JsonResponse
     {
-        $data = $this->transformRequestData($request->validated());
-        $claim = $this->claimService->create($data);
-        return response()->json(new ClaimResource($claim), 201);
+        try {
+            $data = $this->transformRequestData($request->validated());
+            $claim = $this->claimService->create($data);
+            return $this->createdResponse(new ClaimResource($claim), 'Claim created successfully');
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to create claim', 500);
+        }
     }
 
     public function update(UpdateClaimRequest $request, int $id): JsonResponse
     {
-        $claim = $this->claimService->findById($id);
-        $data = $this->transformRequestData($request->validated());
-        $updatedClaim = $this->claimService->update($claim, $data);
-        return response()->json(new ClaimResource($updatedClaim));
+        try {
+            $claim = $this->claimService->findById($id);
+            $data = $this->transformRequestData($request->validated());
+            $updatedClaim = $this->claimService->update($claim, $data);
+            return $this->successResponse(new ClaimResource($updatedClaim), 'Claim updated successfully');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+            return $this->notFoundResponse('Claim not found');
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to update claim', 500);
+        }
     }
 
     public function destroy(int $id): JsonResponse
     {
-        $claim = $this->claimService->findById($id);
-        $this->claimService->delete($claim);
-        return response()->json(null, 204);
+        try {
+            $claim = $this->claimService->findById($id);
+            $this->claimService->delete($claim);
+            return $this->noContentResponse();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+            return $this->notFoundResponse('Claim not found');
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to delete claim', 500);
+        }
     }
 
     private function transformRequestData(array $data): array
