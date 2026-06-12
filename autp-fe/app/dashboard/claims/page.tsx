@@ -5,6 +5,7 @@ import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/app/components/ui/button';
 import { Card } from '@/app/components/ui/card';
+import { Spinner } from '@/app/components/ui/spinner';
 import { useClaimStore } from '@/app/store/useClaimStore';
 import { ClaimFilters } from '@/app/components/claims/ClaimFilters';
 import { ClaimTable } from '@/app/components/claims/ClaimTable';
@@ -127,11 +128,17 @@ export default function ClaimsPage() {
       />
 
       <Card className="p-0">
-        <ClaimTable
-          claims={claims}
-          onEdit={handleEditClick}
-          onDelete={handleDeleteClick}
-        />
+        {isLoading ? (
+          <div className="flex items-center justify-center min-h-96">
+            <Spinner className="size-10" />
+          </div>
+        ) : (
+          <ClaimTable
+            claims={claims}
+            onEdit={handleEditClick}
+            onDelete={handleDeleteClick}
+          />
+        )}
       </Card>
 
       {meta && meta.totalPages > 0 && (

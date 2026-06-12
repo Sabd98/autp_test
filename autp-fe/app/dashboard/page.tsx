@@ -12,6 +12,7 @@ import {
 import { Card, CardContent } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
+import { Spinner } from "@/app/components/ui/spinner";
 import { useClaimStore } from "@/app/store/useClaimStore";
 import { claimsApi } from "@/app/api/claims";
 import { ClaimAUTP } from "@/app/types/claim";
@@ -21,10 +22,12 @@ export default function DashboardPage() {
   const { fetchClaims } = useClaimStore();
   const [recentClaims, setRecentClaims] = useState<ClaimAUTP[]>([]);
   const [stats, setStats] = useState({ total: 0, pending: 0, surveyed: 0, approved: 0, rejected: 0 });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadDashboard = async () => {
       try {
+        setIsLoading(true);
         const response = await claimsApi.getAll({ pageSize: 1000 });
         const allClaims = response.data;
 
@@ -45,6 +48,8 @@ export default function DashboardPage() {
         await fetchClaims({ page: 1, pageSize: 10 });
       } catch (error) {
         console.error("Failed to load dashboard", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -75,41 +80,53 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <MonitoringCard title="Total Klaim" sum={stats.total} Icon={FileText} />
-        <MonitoringCard
-          title="Pending"
-          sum={stats.pending}
-          Icon={Clock}
-          textColor="text-yellow-600"
-          bgColor="bg-yellow-50"
-          iconColor="text-yellow-600"
-        />
-        <MonitoringCard
-          title="Surveyed"
-          sum={stats.surveyed}
-          Icon={ShieldAlert}
-          textColor="text-blue-600"
-          bgColor="bg-blue-50"
-          iconColor="text-blue-600"
-        />
-        <MonitoringCard
-          title="Approved"
-          sum={stats.approved}
-          Icon={CheckCircle2}
-          textColor="text-green-600"
-          bgColor="bg-green-50"
-          iconColor="text-green-600"
-        />
-        <MonitoringCard
-          title="Rejected"
-          sum={stats.rejected}
-          Icon={FileText}
-          textColor="text-red-600"
-          bgColor="bg-red-50"
-          iconColor="text-red-600"
-        />
-      </div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {[...Array(5)].map((_, i) => (
+            <Card key={i}>
+              <div className="flex items-center justify-center min-h-28">
+                <Spinner className="size-8" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <MonitoringCard title="Total Klaim" sum={stats.total} Icon={FileText} />
+          <MonitoringCard
+            title="Pending"
+            sum={stats.pending}
+            Icon={Clock}
+            textColor="text-yellow-600"
+            bgColor="bg-yellow-50"
+            iconColor="text-yellow-600"
+          />
+          <MonitoringCard
+            title="Surveyed"
+            sum={stats.surveyed}
+            Icon={ShieldAlert}
+            textColor="text-blue-600"
+            bgColor="bg-blue-50"
+            iconColor="text-blue-600"
+          />
+          <MonitoringCard
+            title="Approved"
+            sum={stats.approved}
+            Icon={CheckCircle2}
+            textColor="text-green-600"
+            bgColor="bg-green-50"
+            iconColor="text-green-600"
+          />
+          <MonitoringCard
+            title="Rejected"
+            sum={stats.rejected}
+            Icon={FileText}
+            textColor="text-red-600"
+            bgColor="bg-red-50"
+            iconColor="text-red-600"
+          />
+        </div>
+      )}
 
       <Card>
         <div className="px-2 border-b border-border">
@@ -129,7 +146,11 @@ export default function DashboardPage() {
         </div>
         <CardContent className="pt-0">
           <div className="space-y-3">
-            {recentClaims.length > 0 ? (
+            {isLoading ? (
+              <div className="flex items-center justify-center min-h-64">
+                <Spinner className="size-10" />
+              </div>
+            ) : recentClaims.length > 0 ? (
               recentClaims.map((claim) => (
                 <div
                   key={claim.id}

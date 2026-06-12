@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Card } from '@/app/components/ui/card';
+import { Spinner } from '@/app/components/ui/spinner';
 import { useClaimStore } from '@/app/store/useClaimStore';
 import { claimsApi } from '@/app/api/claims';
 import { ClaimTable } from '@/app/components/claims/ClaimTable';
@@ -74,7 +75,13 @@ export default function ValidationPage() {
         </p>
       </div>
 
-      {claims.length === 0 ? (
+      {isLoading ? (
+        <Card>
+          <div className="p-12 flex items-center justify-center min-h-96">
+            <Spinner className="size-10" />
+          </div>
+        </Card>
+      ) : claims.length === 0 ? (
         <Card>
           <div className="p-12 text-center text-muted-foreground">
             <p>Tidak ada klaim yang memerlukan validasi</p>
