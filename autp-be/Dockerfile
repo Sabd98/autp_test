@@ -1,10 +1,11 @@
-FROM php:8.3-fpm
+FROM php:8.4-fpm-alpine
 
 WORKDIR /var/www/html
 
-RUN apt-get update && apt-get install -y \
-    libpq-dev \
+RUN apk add --no-cache \
+    postgresql-dev \
     libzip-dev \
+    oniguruma-dev \
     zip \
     unzip \
     curl \
@@ -19,11 +20,11 @@ RUN apt-get update && apt-get install -y \
     bcmath \
     opcache
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY . .
 
-RUN composer install --no-dev --optimize-autoloader
+RUN COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 

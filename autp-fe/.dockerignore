@@ -1,0 +1,10 @@
+node_modules
+.next
+.env*.local
+npm-debug.log*
+tsconfig.tsbuildinfo
+.env
+.env.local
+.env.development
+.env.production
+build.sh
