@@ -31,7 +31,7 @@ export const useClaimStore = create<ClaimState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const currentFilters = { ...get().filters, ...filters };
-      set((state) => ({ filters: currentFilters }));
+      set({ filters: currentFilters });
 
       const response = await claimsApi.getAll(currentFilters);
       set({
@@ -84,7 +84,18 @@ export const useClaimStore = create<ClaimState>((set, get) => ({
   },
 
   setFilters: (partial) => {
-    const newFilters = { ...get().filters, ...partial, page: 1 };
+    const currentFilters = get().filters;
+    // Reset to page 1 only if filter values change (search, status, cause), not on pagination
+    const isFilterChange = Boolean(
+      partial.search !== undefined ||
+      partial.status !== undefined ||
+      partial.cause !== undefined
+    );
+    const newFilters = {
+      ...currentFilters,
+      ...partial,
+      ...(isFilterChange && { page: 1 }),
+    };
     set({ filters: newFilters });
     get().fetchClaims(newFilters);
   },

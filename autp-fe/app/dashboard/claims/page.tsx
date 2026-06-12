@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/app/components/ui/button';
@@ -76,9 +76,29 @@ export default function ClaimsPage() {
     }
   };
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setFilters({ search: '', status: '', cause: '' });
-  };
+  }, [setFilters]);
+
+  const handleSearchChange = useCallback((search: string) => {
+    setFilters({ search });
+  }, [setFilters]);
+
+  const handleStatusChange = useCallback((status: string) => {
+    setFilters({ status, page: 1 });
+  }, [setFilters]);
+
+  const handleCauseChange = useCallback((cause: string) => {
+    setFilters({ cause, page: 1 });
+  }, [setFilters]);
+
+  const handlePageChange = useCallback((page: number) => {
+    setFilters({ page });
+  }, [setFilters]);
+
+  const handlePageSizeChange = useCallback((pageSize: number) => {
+    setFilters({ pageSize, page: 1 });
+  }, [setFilters]);
 
   return (
     <div className="space-y-6">
@@ -94,9 +114,9 @@ export default function ClaimsPage() {
       </div>
 
       <ClaimFilters
-        onSearchChange={(search) => setFilters({ search })}
-        onStatusChange={(status) => setFilters({ status, page: 1 })}
-        onCauseChange={(cause) => setFilters({ cause, page: 1 })}
+        onSearchChange={handleSearchChange}
+        onStatusChange={handleStatusChange}
+        onCauseChange={handleCauseChange}
         onReset={handleReset}
       />
 
@@ -114,8 +134,8 @@ export default function ClaimsPage() {
           totalPages={meta.totalPages}
           totalCount={meta.total}
           pageSize={meta.pageSize}
-          onPageChange={(page) => setFilters({ page })}
-          onPageSizeChange={(pageSize) => setFilters({ pageSize, page: 1 })}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
         />
       )}
 
