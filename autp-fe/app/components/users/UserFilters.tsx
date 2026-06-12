@@ -6,10 +6,9 @@ import { Input } from '@/app/components/ui/input';
 
 interface UserFiltersProps {
   onSearchChange: (search: string) => void;
-  onReset: () => void;
 }
 
-export function UserFilters({ onSearchChange, onReset }: UserFiltersProps) {
+export function UserFilters({ onSearchChange }: UserFiltersProps) {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
@@ -27,19 +26,9 @@ export function UserFilters({ onSearchChange, onReset }: UserFiltersProps) {
           placeholder="Cari username atau nama"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full"
+          className="w-1/4"
         />
       </div>
-
-      <Button
-        variant="outline"
-        onClick={() => {
-          setSearch('');
-          onReset();
-        }}
-      >
-        Reset
-      </Button>
     </div>
   );
 }

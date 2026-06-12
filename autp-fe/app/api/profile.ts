@@ -14,7 +14,7 @@ export const profileApi = {
       '/profile',
       { name }
     );
-    return response.data.data;
+    return response.data;
   },
 
   async resetPassword(

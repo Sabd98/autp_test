@@ -15,6 +15,7 @@ interface AuthState {
   _hasHydrated: boolean;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
+  updateUserName: (name: string) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -48,6 +49,11 @@ export const useAuthStore = create<AuthState>()(
           user: null,
         });
         document.cookie = 'authToken=; path=/; max-age=0';
+      },
+      updateUserName: (name: string) => {
+        set((state) => ({
+          user: state.user ? { ...state.user, name } : null,
+        }));
       },
     }),
     {

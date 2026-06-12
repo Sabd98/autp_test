@@ -81,10 +81,6 @@ export default function UsersPage() {
     }
   };
 
-  const handleReset = useCallback(() => {
-    setFilters({ search: '' });
-  }, [setFilters]);
-
   const handleSearchChange = useCallback((search: string) => {
     setFilters({ search });
   }, [setFilters]);
@@ -110,7 +106,7 @@ export default function UsersPage() {
         </Button>
       </div>
 
-      <UserFilters onSearchChange={handleSearchChange} onReset={handleReset} />
+      <UserFilters onSearchChange={handleSearchChange} />
 
       <Card className="p-0">
         <UserTable users={users} onEdit={handleEditClick} onDelete={handleDeleteClick} />
