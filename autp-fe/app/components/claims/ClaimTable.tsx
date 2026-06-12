@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Edit, Eye, Trash2 } from 'lucide-react';
+import { Edit, Eye, Trash2, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/app/components/ui/table';
@@ -9,8 +9,10 @@ import { ClaimAUTP } from '@/app/types/claim';
 
 interface ClaimTableProps {
   claims: ClaimAUTP[];
-  onEdit: (claim: ClaimAUTP) => void;
-  onDelete: (claim: ClaimAUTP) => void;
+  onEdit?: (claim: ClaimAUTP) => void;
+  onDelete?: (claim: ClaimAUTP) => void;
+  onApprove?: (claim: ClaimAUTP) => void;
+  onReject?: (claim: ClaimAUTP) => void;
 }
 
 const statusVariants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
@@ -20,7 +22,7 @@ const statusVariants: Record<string, 'default' | 'secondary' | 'destructive' | '
   Rejected: 'destructive',
 };
 
-export function ClaimTable({ claims, onEdit, onDelete }: ClaimTableProps) {
+export function ClaimTable({ claims, onEdit, onDelete, onApprove, onReject }: ClaimTableProps) {
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('id-ID');
   };
@@ -92,24 +94,53 @@ export function ClaimTable({ claims, onEdit, onDelete }: ClaimTableProps) {
                       <Eye size={16} />
                     </Link>
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => onEdit(claim)}
-                    title="Edit"
-                  >
-                    <Edit size={16} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive hover:text-destructive"
-                    onClick={() => onDelete(claim)}
-                    title="Hapus"
-                  >
-                    <Trash2 size={16} />
-                  </Button>
+                  {onApprove && onReject ? (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-green-600 hover:text-green-700"
+                        onClick={() => onApprove(claim)}
+                        title="Setujui"
+                      >
+                        <CheckCircle2 size={16} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        onClick={() => onReject(claim)}
+                        title="Tolak"
+                      >
+                        <XCircle size={16} />
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      {onEdit && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => onEdit(claim)}
+                          title="Edit"
+                        >
+                          <Edit size={16} />
+                        </Button>
+                      )}
+                      {onDelete && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          onClick={() => onDelete(claim)}
+                          title="Hapus"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      )}
+                    </>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

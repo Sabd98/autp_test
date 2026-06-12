@@ -13,4 +13,9 @@ export const CLAIM_STATUSES = [
   'Rejected',
 ] as const;
 
+export const FORM_CLAIM_STATUSES = [
+  'Pending',
+  'Surveyed',
+] as const;
+
 export const PLANTING_PERIODS = ['MT1', 'MT2'] as const;

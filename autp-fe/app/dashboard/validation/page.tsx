@@ -6,19 +6,18 @@ import { Card } from '@/app/components/ui/card';
 import { useClaimStore } from '@/app/store/useClaimStore';
 import { claimsApi } from '@/app/api/claims';
 import { ClaimTable } from '@/app/components/claims/ClaimTable';
-import { ClaimForm } from '@/app/components/claims/ClaimForm';
-import { ClaimDeleteDialog } from '@/app/components/claims/ClaimDeleteDialog';
+import { ClaimValidationDialog } from '@/app/components/claims/ClaimValidationDialog';
 import { ClaimAUTP } from '@/app/types/claim';
 import { ApiErrorResponse } from '@/app/types/api';
 import axios from 'axios';
 
 export default function ValidationPage() {
-  const { updateClaim, deleteClaim } = useClaimStore();
+  const { updateClaim } = useClaimStore();
   const [claims, setClaims] = useState<ClaimAUTP[]>([]);
-  const [formOpen, setFormOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [editingClaim, setEditingClaim] = useState<ClaimAUTP | null>(null);
-  const [deletingClaim, setDeletingClaim] = useState<ClaimAUTP | null>(null);
+  const [validatingClaim, setValidatingClaim] = useState<ClaimAUTP | null>(null);
+  const [validationAction, setValidationAction] = useState<'approve' | 'reject' | null>(null);
+  const [validationOpen, setValidationOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const loadClaims = async () => {
@@ -34,43 +33,35 @@ export default function ValidationPage() {
     loadClaims();
   }, []);
 
-  const handleEditClick = (claim: ClaimAUTP) => {
-    setEditingClaim(claim);
-    setFormOpen(true);
+  const handleApproveClick = (claim: ClaimAUTP) => {
+    setValidatingClaim(claim);
+    setValidationAction('approve');
+    setValidationOpen(true);
   };
 
-  const handleDeleteClick = (claim: ClaimAUTP) => {
-    setDeletingClaim(claim);
-    setDeleteOpen(true);
+  const handleRejectClick = (claim: ClaimAUTP) => {
+    setValidatingClaim(claim);
+    setValidationAction('reject');
+    setValidationOpen(true);
   };
 
-  const handleFormSubmit = async (data: Omit<ClaimAUTP, 'id' | 'submissionDate'> | Partial<ClaimAUTP>) => {
-    if (editingClaim) {
-      try {
-        await updateClaim(editingClaim.id, data);
-        setClaims(claims.map(c => c.id === editingClaim.id ? { ...c, ...data } : c));
-        toast.success('Klaim berhasil diperbarui');
-        setFormOpen(false);
-        setEditingClaim(null);
-      } catch (err) {
-        const apiErr = err instanceof axios.AxiosError ? (err.response?.data as ApiErrorResponse) : null;
-        toast.error(apiErr?.message || 'Terjadi kesalahan');
-      }
-    }
-  };
+  const handleValidationConfirm = async () => {
+    if (!validatingClaim || !validationAction) return;
 
-  const handleDeleteConfirm = async () => {
-    if (deletingClaim) {
-      try {
-        await deleteClaim(deletingClaim.id);
-        setClaims(claims.filter(c => c.id !== deletingClaim.id));
-        toast.success('Klaim berhasil dihapus');
-        setDeleteOpen(false);
-        setDeletingClaim(null);
-      } catch (err) {
-        const apiErr = err instanceof axios.AxiosError ? (err.response?.data as ApiErrorResponse) : null;
-        toast.error(apiErr?.message || 'Terjadi kesalahan saat menghapus');
-      }
+    try {
+      setIsLoading(true);
+      const newStatus = validationAction === 'approve' ? 'Approved' : 'Rejected';
+      await updateClaim(validatingClaim.id, { claimStatus: newStatus });
+      setClaims(claims.filter(c => c.id !== validatingClaim.id));
+      toast.success(`Klaim berhasil ${validationAction === 'approve' ? 'disetujui' : 'ditolak'}`);
+      setValidationOpen(false);
+      setValidatingClaim(null);
+      setValidationAction(null);
+    } catch (err) {
+      const apiErr = err instanceof axios.AxiosError ? (err.response?.data as ApiErrorResponse) : null;
+      toast.error(apiErr?.message || 'Terjadi kesalahan');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -100,26 +91,20 @@ export default function ValidationPage() {
           <Card className="p-0">
             <ClaimTable
               claims={claims}
-              onEdit={handleEditClick}
-              onDelete={handleDeleteClick}
+              onApprove={handleApproveClick}
+              onReject={handleRejectClick}
             />
           </Card>
         </>
       )}
 
-      <ClaimForm
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        onSubmit={handleFormSubmit}
-        initialData={editingClaim || undefined}
-        isEdit={!!editingClaim}
-      />
-
-      <ClaimDeleteDialog
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        claim={deletingClaim}
-        onConfirm={handleDeleteConfirm}
+      <ClaimValidationDialog
+        open={validationOpen}
+        onOpenChange={setValidationOpen}
+        claim={validatingClaim}
+        type={validationAction || 'approve'}
+        onConfirm={handleValidationConfirm}
+        isLoading={isLoading}
       />
     </div>
   );

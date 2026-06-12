@@ -20,6 +20,8 @@ export function ClaimFilters({
   onReset,
 }: ClaimFiltersProps) {
   const [search, setSearch] = useState('');
+  const [statusValue, setStatusValue] = useState('all');
+  const [causeValue, setCauseValue] = useState('all');
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -41,7 +43,10 @@ export function ClaimFilters({
       </div>
 
       <div className="flex gap-2">
-        <Select onValueChange={(val) => onStatusChange(val === 'all' ? '' : val)}>
+        <Select value={statusValue} onValueChange={(val) => {
+          setStatusValue(val);
+          onStatusChange(val === 'all' ? '' : val);
+        }}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -55,7 +60,10 @@ export function ClaimFilters({
           </SelectContent>
         </Select>
 
-        <Select onValueChange={(val) => onCauseChange(val === 'all' ? '' : val)}>
+        <Select value={causeValue} onValueChange={(val) => {
+          setCauseValue(val);
+          onCauseChange(val === 'all' ? '' : val);
+        }}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Penyebab" />
           </SelectTrigger>
@@ -73,6 +81,10 @@ export function ClaimFilters({
           variant="outline"
           onClick={() => {
             setSearch('');
+            setStatusValue('all');
+            setCauseValue('all');
+            onStatusChange('');
+            onCauseChange('');
             onReset();
           }}
         >

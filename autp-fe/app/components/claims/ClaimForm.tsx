@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/app/components/ui/textarea';
 import { Separator } from '@/app/components/ui/separator';
 import { ClaimAUTP } from '@/app/types/claim';
-import { FAILURE_CAUSES, CLAIM_STATUSES, PLANTING_PERIODS } from '@/app/lib/constants';
+import { FAILURE_CAUSES, FORM_CLAIM_STATUSES, PLANTING_PERIODS } from '@/app/lib/constants';
 
 interface ClaimFormProps {
   open: boolean;
@@ -260,7 +260,7 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }:
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {CLAIM_STATUSES.map((status) => (
+                    {FORM_CLAIM_STATUSES.map((status) => (
                       <SelectItem key={status} value={status}>
                         {status}
                       </SelectItem>
@@ -271,7 +271,7 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit }:
             </div>
           </div>
 
-          {isEdit && (formData.claimStatus === 'Surveyed' || formData.claimStatus === 'Approved' || formData.claimStatus === 'Rejected') && (
+          {isEdit && formData.claimStatus === 'Surveyed' && (
             <>
               <Separator />
               <div>
