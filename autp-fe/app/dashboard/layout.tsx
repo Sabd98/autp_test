@@ -12,7 +12,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (hasHydrated && !isAuthenticated) {
-      router.push('/login');
+      router.replace('/login');
     }
   }, [hasHydrated, isAuthenticated, router]);
 
