@@ -51,9 +51,9 @@ export default function ValidationPage() {
     try {
       setIsLoading(true);
       const newStatus = validationAction === 'approve' ? 'Approved' : 'Rejected';
-      await updateClaim(validatingClaim.id, { claimStatus: newStatus });
+      const response = await updateClaim(validatingClaim.id, { claimStatus: newStatus });
       setClaims(claims.filter(c => c.id !== validatingClaim.id));
-      toast.success(`Klaim berhasil ${validationAction === 'approve' ? 'disetujui' : 'ditolak'}`);
+      toast.success(response.message);
       setValidationOpen(false);
       setValidatingClaim(null);
       setValidationAction(null);

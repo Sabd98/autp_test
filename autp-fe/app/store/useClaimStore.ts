@@ -3,6 +3,11 @@ import { ClaimAUTP } from '@/app/types/claim';
 import { claimsApi, ClaimFilters } from '@/app/api/claims';
 import { PaginatedMeta } from '@/app/types/api';
 
+interface ClaimResponse {
+  message: string;
+  data: ClaimAUTP;
+}
+
 interface ClaimState {
   claims: ClaimAUTP[];
   meta: PaginatedMeta | null;
@@ -10,9 +15,9 @@ interface ClaimState {
   error: string | null;
   filters: ClaimFilters & { page: number; pageSize: number };
   fetchClaims: (filters?: ClaimFilters) => Promise<void>;
-  createClaim: (data: Omit<ClaimAUTP, 'id'>) => Promise<ClaimAUTP>;
-  updateClaim: (id: number, data: Partial<ClaimAUTP>) => Promise<ClaimAUTP>;
-  deleteClaim: (id: number) => Promise<void>;
+  createClaim: (data: Omit<ClaimAUTP, 'id'>) => Promise<ClaimResponse>;
+  updateClaim: (id: number, data: Partial<ClaimAUTP>) => Promise<ClaimResponse>;
+  deleteClaim: (id: number) => Promise<string>;
   getClaimById: (id: number) => ClaimAUTP | undefined;
   setFilters: (partial: Partial<ClaimFilters>) => void;
 }
@@ -48,9 +53,9 @@ export const useClaimStore = create<ClaimState>((set, get) => ({
 
   createClaim: async (data) => {
     try {
-      const claim = await claimsApi.create(data);
+      const response = await claimsApi.create(data);
       await get().fetchClaims();
-      return claim;
+      return response;
     } catch (err) {
       throw err;
     }
@@ -58,11 +63,11 @@ export const useClaimStore = create<ClaimState>((set, get) => ({
 
   updateClaim: async (id, data) => {
     try {
-      const claim = await claimsApi.update(id, data);
+      const response = await claimsApi.update(id, data);
       set((state) => ({
-        claims: state.claims.map((c) => (c.id === id ? claim : c)),
+        claims: state.claims.map((c) => (c.id === id ? response.data : c)),
       }));
-      return claim;
+      return response;
     } catch (err) {
       throw err;
     }
@@ -70,10 +75,11 @@ export const useClaimStore = create<ClaimState>((set, get) => ({
 
   deleteClaim: async (id) => {
     try {
-      await claimsApi.remove(id);
+      const response = await claimsApi.remove(id);
       set((state) => ({
         claims: state.claims.filter((c) => c.id !== id),
       }));
+      return response.message;
     } catch (err) {
       throw err;
     }

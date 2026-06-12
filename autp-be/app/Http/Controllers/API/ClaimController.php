@@ -76,7 +76,7 @@ class ClaimController extends Controller
         try {
             $claim = $this->claimService->findById($id);
             $this->claimService->delete($claim);
-            return $this->noContentResponse();
+            return $this->successResponse(null, 'Claim deleted successfully');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
             return $this->notFoundResponse('Claim not found');
         } catch (\Exception $e) {

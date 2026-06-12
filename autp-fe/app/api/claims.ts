@@ -30,7 +30,7 @@ export const claimsApi = {
       '/claims',
       payload
     );
-    return response.data.data;
+    return response.data;
   },
 
   async update(id: number, payload: Partial<ClaimAUTP>) {
@@ -38,10 +38,11 @@ export const claimsApi = {
       `/claims/${id}`,
       payload
     );
-    return response.data.data;
+    return response.data;
   },
 
   async remove(id: number) {
-    await client.delete(`/claims/${id}`);
+    const response = await client.delete<{ message: string }>(`/claims/${id}`);
+    return response.data;
   },
 };

@@ -34,6 +34,7 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit, f
     failedLandArea: 0,
     failureCause: 'Banjir',
     claimStatus: 'Pending',
+    submissionDate: '',
     surveyorName: '',
     surveyDate: '',
     surveyNotes: '',
@@ -68,6 +69,7 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit, f
         failedLandArea: 0,
         failureCause: 'Banjir',
         claimStatus: 'Pending',
+        submissionDate: '',
         surveyorName: '',
         surveyDate: '',
         surveyNotes: '',
@@ -133,20 +135,34 @@ export function ClaimForm({ open, onOpenChange, onSubmit, initialData, isEdit, f
                 />
                 {getFieldError('certificateNumber') && <p className="text-xs text-red-500 mt-1">{getFieldError('certificateNumber')}</p>}
               </div>
-              <div>
-                <Label className='mb-2' htmlFor="plantingPeriod">Musim Tanam</Label>
-                <Select value={formData.plantingPeriod} onValueChange={(val) => setFormData({ ...formData, plantingPeriod: val as 'MT1' | 'MT2' })}>
-                  <SelectTrigger id="plantingPeriod">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PLANTING_PERIODS.map((period) => (
-                      <SelectItem key={period} value={period}>
-                        {period}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className='mb-2' htmlFor="plantingPeriod">Musim Tanam</Label>
+                  <Select value={formData.plantingPeriod} onValueChange={(val) => setFormData({ ...formData, plantingPeriod: val as 'MT1' | 'MT2' })}>
+                    <SelectTrigger id="plantingPeriod">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PLANTING_PERIODS.map((period) => (
+                        <SelectItem key={period} value={period}>
+                          {period}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className='mb-2' htmlFor="submissionDate">Tanggal Pengajuan {isEdit ? '' : '*'}</Label>
+                  <Input
+                    id="submissionDate"
+                    type="date"
+                    value={formData.submissionDate || ''}
+                    onChange={(e) => setFormData({ ...formData, submissionDate: e.target.value })}
+                    disabled={isEdit}
+                    className={getFieldError('submissionDate') ? 'border-red-500' : ''}
+                  />
+                  {getFieldError('submissionDate') && <p className="text-xs text-red-500 mt-1">{getFieldError('submissionDate')}</p>}
+                </div>
               </div>
             </div>
           </div>

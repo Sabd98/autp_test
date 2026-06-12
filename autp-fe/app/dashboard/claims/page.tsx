@@ -48,12 +48,13 @@ export default function ClaimsPage() {
     setFieldErrors({});
     try {
       if (editingClaim) {
-        await updateClaim(editingClaim.id, data);
-        toast.success('Klaim berhasil diperbarui');
+        const { submissionDate, ...updateData } = data as any;
+        const response = await updateClaim(editingClaim.id, updateData);
+        toast.success(response.message);
         setFormOpen(false);
       } else {
-        await createClaim(data as Omit<ClaimAUTP, 'id'>);
-        toast.success('Klaim berhasil ditambahkan');
+        const response = await createClaim(data as Omit<ClaimAUTP, 'id'>);
+        toast.success(response.message);
         setFormOpen(false);
       }
     } catch (err) {
@@ -70,8 +71,8 @@ export default function ClaimsPage() {
   const handleDeleteConfirm = async () => {
     if (deletingClaim) {
       try {
-        await deleteClaim(deletingClaim.id);
-        toast.success('Klaim berhasil dihapus');
+        const message = await deleteClaim(deletingClaim.id);
+        toast.success(message);
         setDeleteOpen(false);
         setDeletingClaim(null);
       } catch (err) {

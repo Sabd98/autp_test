@@ -89,9 +89,9 @@ export default function ClaimDetailPage() {
 
   const handleFormSubmit = async (data: Omit<ClaimAUTP, 'id' | 'submissionDate'> | Partial<ClaimAUTP>) => {
     try {
-      const updated = await updateClaim(id, data);
-      setClaim(updated);
-      toast.success('Klaim berhasil diperbarui');
+      const response = await updateClaim(id, data);
+      setClaim(response.data);
+      toast.success(response.message);
       setFormOpen(false);
     } catch (err) {
       const apiErr = err instanceof axios.AxiosError ? (err.response?.data as ApiErrorResponse) : null;
