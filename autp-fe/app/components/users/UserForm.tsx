@@ -77,7 +77,7 @@ export function UserForm({ open, onOpenChange, onSubmit, initialData, isEdit, fi
 
         <div className="space-y-4 py-4">
           <div>
-            <Label htmlFor="username">Username *</Label>
+            <Label className="mb-2" htmlFor="username">Username *</Label>
             <Input
               id="username"
               value={formData.username || ''}
@@ -88,7 +88,7 @@ export function UserForm({ open, onOpenChange, onSubmit, initialData, isEdit, fi
           </div>
 
           <div>
-            <Label htmlFor="name">Nama *</Label>
+            <Label className="mb-2" htmlFor="name">Nama *</Label>
             <Input
               id="name"
               value={formData.name || ''}
@@ -99,7 +99,7 @@ export function UserForm({ open, onOpenChange, onSubmit, initialData, isEdit, fi
           </div>
 
           <div>
-            <Label htmlFor="password">
+            <Label className="mb-2" htmlFor="password">
               {isEdit ? 'Password (Kosongkan jika tidak ingin mengubah)' : 'Password'} *
             </Label>
             <Input
@@ -113,7 +113,7 @@ export function UserForm({ open, onOpenChange, onSubmit, initialData, isEdit, fi
           </div>
 
           <div>
-            <Label htmlFor="password_confirmation">Konfirmasi Password *</Label>
+            <Label className="mb-2" htmlFor="password_confirmation">Konfirmasi Password *</Label>
             <Input
               id="password_confirmation"
               type="password"
