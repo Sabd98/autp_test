@@ -76,7 +76,7 @@ export default function LoginPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Masukkan username"
-              className="w-full px-3 py-2 mt-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-jasindo focus:border-transparent"
+              className="w-full px-3 py-2 mt-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-jasindo focus:border-transparent transition-none"
               disabled={isLoading}
             />
           </div>
@@ -95,7 +95,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Masukkan password"
-                className="w-full px-3 py-2 mt-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-jasindo focus:border-transparent pr-10"
+                className="w-full px-3 py-2 mt-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-jasindo focus:border-transparent pr-10 transition-none"
                 disabled={isLoading}
               />
               <button
