@@ -6,3 +6,10 @@ docker ps --format '{{.Names}}' | grep -q autp_nginx && { echo "Containers alrea
 
 echo "Building and starting containers..."
 docker-compose up --build
+
+echo "Clearing Laravel caches..."
+docker exec autp_app php artisan cache:clear
+docker exec autp_app php artisan config:cache
+docker exec autp_app php artisan route:cache
+
+echo "✓ Build complete! Backend ready at http://localhost:8000"
