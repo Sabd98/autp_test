@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Claim;
-use Illuminate\Pagination\Paginator;
 
 class ClaimService
 {

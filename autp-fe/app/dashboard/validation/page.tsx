@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Card } from '@/app/components/ui/card';
 import { Spinner } from '@/app/components/ui/spinner';
@@ -8,6 +8,7 @@ import { useClaimStore } from '@/app/store/useClaimStore';
 import { claimsApi } from '@/app/api/claims';
 import { ClaimTable } from '@/app/components/claims/ClaimTable';
 import { ClaimValidationDialog } from '@/app/components/claims/ClaimValidationDialog';
+import { Pagination } from '@/app/components/claims/Pagination';
 import { ClaimAUTP } from '@/app/types/claim';
 import { ApiErrorResponse } from '@/app/types/api';
 import axios from 'axios';
@@ -20,22 +21,35 @@ export default function ValidationPage() {
   const [validationOpen, setValidationOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
+  const loadClaims = useCallback(async (currentPage: number, currentPageSize: number) => {
+    try {
+      setIsFetching(true);
+      const result = await claimsApi.getAll({ status: 'Surveyed', page: currentPage, pageSize: currentPageSize });
+      setClaims(result.data);
+      setTotal(result.meta.total);
+      setTotalPages(result.meta.totalPages);
+    } catch (error) {
+      console.error('Failed to load claims', error);
+    } finally {
+      setIsFetching(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const loadClaims = async () => {
-      try {
-        setIsFetching(true);
-        const surveyed = await claimsApi.getAll({ status: 'Surveyed', pageSize: 1000 });
-        setClaims(surveyed.data);
-      } catch (error) {
-        console.error('Failed to load claims', error);
-      } finally {
-        setIsFetching(false);
-      }
-    };
+    loadClaims(page, pageSize);
+  }, [page, pageSize]);
 
-    loadClaims();
-  }, []);
+  const handlePageChange = (newPage: number) => setPage(newPage);
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1);
+  };
 
   const handleApproveClick = (claim: ClaimAUTP) => {
     setValidatingClaim(claim);
@@ -56,11 +70,11 @@ export default function ValidationPage() {
       setIsLoading(true);
       const newStatus = validationAction === 'approve' ? 'Approved' : 'Rejected';
       const response = await updateClaim(validatingClaim.id, { claimStatus: newStatus });
-      setClaims(claims.filter(c => c.id !== validatingClaim.id));
       toast.success(response.message);
       setValidationOpen(false);
       setValidatingClaim(null);
       setValidationAction(null);
+      await loadClaims(page, pageSize);
     } catch (err) {
       const apiErr = err instanceof axios.AxiosError ? (err.response?.data as ApiErrorResponse) : null;
       toast.error(apiErr?.message || 'Terjadi kesalahan');
@@ -94,7 +108,7 @@ export default function ValidationPage() {
         <>
           <div className="text-sm text-muted-foreground p-4 bg-blue-50 border max-w-[18vw] border-blue-200 rounded-lg">
             <p>
-              <span className="font-medium">Total klaim untuk validasi:</span> {claims.length} klaim
+              <span className="font-medium">Total klaim untuk validasi:</span> {total} klaim
             </p>
           </div>
 
@@ -105,6 +119,17 @@ export default function ValidationPage() {
               onReject={handleRejectClick}
             />
           </Card>
+
+          {totalPages > 0 && (
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              totalCount={total}
+              pageSize={pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          )}
         </>
       )}
 

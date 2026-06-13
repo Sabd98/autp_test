@@ -39,25 +39,21 @@ class Claim extends Model
 
     public static function filter(array $filters): array
     {
-        $page = $filters['page'] ?? 1;
+        $page     = $filters['page'] ?? 1;
         $pageSize = $filters['pageSize'] ?? 10;
 
-        $query = static::search($filters['search'] ?? null)
-                       ->byStatus($filters['status'] ?? null)
-                       ->byCause($filters['cause'] ?? null);
-
-        $total = $query->count();
-        $items = $query->offset(($page - 1) * $pageSize)
-                       ->limit($pageSize)
-                       ->get();
+        $result = static::search($filters['search'] ?? null)
+                        ->byStatus($filters['status'] ?? null)
+                        ->byCause($filters['cause'] ?? null)
+                        ->paginate($pageSize, ['*'], 'page', $page);
 
         return [
-            'data' => $items,
+            'data' => $result->items(),
             'meta' => [
-                'total' => $total,
-                'page' => $page,
-                'pageSize' => $pageSize,
-                'totalPages' => (int) ceil($total / $pageSize),
+                'total'      => $result->total(),
+                'page'       => $result->currentPage(),
+                'pageSize'   => $result->perPage(),
+                'totalPages' => $result->lastPage(),
             ],
         ];
     }
