@@ -19,15 +19,18 @@ export default function ValidationPage() {
   const [validationAction, setValidationAction] = useState<'approve' | 'reject' | null>(null);
   const [validationOpen, setValidationOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
 
   useEffect(() => {
     const loadClaims = async () => {
       try {
-        const pending = await claimsApi.getAll({ status: 'Pending', pageSize: 1000 });
+        setIsFetching(true);
         const surveyed = await claimsApi.getAll({ status: 'Surveyed', pageSize: 1000 });
-        setClaims([...pending.data, ...surveyed.data]);
+        setClaims(surveyed.data);
       } catch (error) {
         console.error('Failed to load claims', error);
+      } finally {
+        setIsFetching(false);
       }
     };
 
@@ -71,11 +74,11 @@ export default function ValidationPage() {
       <div>
         <h1 className="text-3xl font-bold text-foreground">Validasi Klaim</h1>
         <p className="text-muted-foreground mt-1">
-          Proses validasi klaim yang masih dalam status Pending atau Surveyed
+          Proses validasi klaim yang masih dalam status Surveyed
         </p>
       </div>
 
-      {isLoading ? (
+      {isFetching ? (
         <Card>
           <div className="p-12 flex items-center justify-center min-h-96">
             <Spinner className="size-10" />

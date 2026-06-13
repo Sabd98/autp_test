@@ -24,7 +24,6 @@ import { Separator } from "@/app/components/ui/separator";
 import { ClaimAUTP } from "@/app/types/claim";
 import {
   FAILURE_CAUSES,
-  FORM_CLAIM_STATUSES,
   PLANTING_PERIODS,
 } from "@/app/lib/constants";
 import { Spinner } from "../ui/spinner";
@@ -83,7 +82,13 @@ export function ClaimForm({
   const handleSubmit = async () => {
     try {
       setIsLoading(true);
-      await onSubmit(formData);
+      const submitData = { ...formData };
+      if (!isEdit) {
+        submitData.claimStatus = "Pending";
+      } else {
+        submitData.claimStatus = "Surveyed";
+      }
+      await onSubmit(submitData);
       setFormData({
         farmerName: "",
         farmerNIK: "",
@@ -405,23 +410,12 @@ export function ClaimForm({
                 <Label className="mb-2" htmlFor="claimStatus">
                   Status Klaim
                 </Label>
-                <Select
-                  value={formData.claimStatus}
-                  onValueChange={(val) =>
-                    setFormData({ ...formData, claimStatus: val as any })
-                  }
-                >
-                  <SelectTrigger id="claimStatus">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FORM_CLAIM_STATUSES.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="claimStatus"
+                  value={isEdit ? "Surveyed" : "Pending"}
+                  disabled
+                  className="bg-muted"
+                />
               </div>
             </div>
           </div>

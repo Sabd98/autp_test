@@ -13,6 +13,12 @@ export const CLAIM_STATUSES = [
   'Rejected',
 ] as const;
 
+export const TABLE_CLAIM_STATUSES = [
+  'Pending',
+  'Approved',
+  'Rejected',
+] as const;
+
 export const FORM_CLAIM_STATUSES = [
   'Pending',
   'Surveyed',

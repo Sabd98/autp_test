@@ -117,7 +117,7 @@ export function ClaimTable({ claims, onEdit, onDelete, onApprove, onReject }: Cl
                     </>
                   ) : (
                     <>
-                      {onEdit && (
+                      {onEdit && (claim.claimStatus === 'Pending' || claim.claimStatus === 'Surveyed') && (
                         <Button
                           variant="ghost"
                           size="icon"
