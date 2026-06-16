@@ -1,7 +1,5 @@
 FROM php:8.4-fpm-alpine
 
-WORKDIR /var/www/html
-
 RUN apk add --no-cache \
     postgresql-dev \
     libzip-dev \
@@ -15,18 +13,32 @@ RUN apk add --no-cache \
     pdo_pgsql \
     mbstring \
     zip \
-    exif \
     pcntl \
     bcmath \
     opcache
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+WORKDIR /var/www/html
+
+COPY composer.json composer.lock ./
+RUN COMPOSER_ALLOW_SUPERUSER=1 COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
+
 COPY . .
 
-RUN COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader
+RUN rm -f bootstrap/cache/packages.php bootstrap/cache/services.php bootstrap/cache/config.php bootstrap/cache/routes-v7.php
 
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+COPY docker/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+
+RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs \
+    bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+
+USER www-data
+
+ENV APP_ENV=production \
+    PHP_OPCACHE_ENABLE=1
 
 EXPOSE 9000
 

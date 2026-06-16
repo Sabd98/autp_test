@@ -8,3 +8,5 @@ tsconfig.tsbuildinfo
 .env.development
 .env.production
 build.sh
+AGENTS.md
+README.md
