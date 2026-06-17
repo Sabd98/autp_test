@@ -36,8 +36,9 @@ export default function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
         {/* MAIN CONTENT AREA */}
         <main
           className={clsx(
-            "flex-1 p-6 transition-all duration-300 min-w-0",
-            !isMobile && isSidebarOpen && "ml-64"
+           "flex-1 p-6 pt-20 transition-all duration-300 min-w-0",
+            !isMobile && isSidebarOpen && "ml-64",
+            !isMobile && !isSidebarOpen && "ml-16"
           )}
         >
           <div className="max-w-7xl mx-auto">
