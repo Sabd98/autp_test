@@ -13,7 +13,7 @@ class AuthService
         $user = User::findByUsername($username);
 
         if (!$user || !Hash::check($password, $user->password)) {
-            throw new \InvalidArgumentException('Invalid credentials');
+            throw new \InvalidArgumentException('Invalid Username or Password');
         }
 
         $token = Auth::guard('api')->login($user);

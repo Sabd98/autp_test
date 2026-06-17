@@ -18,30 +18,29 @@ import { Spinner } from "../components/ui/spinner";
 export default function LoginPage() {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
+  const loginErrors = useAuthStore((state) => state.loginErrors);
+  const clearLoginErrors = useAuthStore((state) => state.clearLoginErrors);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
+  const [globalError, setGlobalError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    clearLoginErrors();
+    setGlobalError("");
     setIsLoading(true);
 
-    if (!username.trim() || !password.trim()) {
-      setError("Username dan password harus diisi");
-      setIsLoading(false);
-      return;
-    }
-
-    const success = await login(username, password);
-    if (success) {
+    const result = await login(username, password);
+    if (result.ok) {
       router.replace("/dashboard");
     } else {
-      setError("Username atau password salah");
-      setPassword("");
+      if (!result.isValidation) {
+        setGlobalError(result.error ?? "Login gagal");
+        setPassword("");
+      }
       setIsLoading(false);
     }
   };
@@ -80,6 +79,11 @@ export default function LoginPage() {
               className="w-full px-3 py-2 mt-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-jasindo focus:border-transparent transition-none"
               disabled={isLoading}
             />
+            {loginErrors?.username && (
+              <p className="text-sm text-destructive">
+                {loginErrors.username[0]}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -108,11 +112,16 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+            {loginErrors?.password && (
+              <p className="text-sm text-destructive">
+                {loginErrors.password[0]}
+              </p>
+            )}
           </div>
 
-          {error && (
+          {globalError && (
             <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-md text-sm text-destructive">
-              {error}
+              {globalError}
             </div>
           )}
 
