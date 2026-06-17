@@ -137,8 +137,7 @@ export function UserForm({
             <Label className="mb-2" htmlFor="password">
               {isEdit
                 ? "Password (Kosongkan jika tidak ingin mengubah)"
-                : "Password"}{" "}
-              *
+                : "Password *"}{" "}
             </Label>
             <Input
               id="password"
@@ -158,7 +157,7 @@ export function UserForm({
 
           <div>
             <Label className="mb-2" htmlFor="password_confirmation">
-              Konfirmasi Password *
+              {isEdit ? "Konfirmasi Password" : "Konfirmasi Password *"}
             </Label>
             <Input
               id="password_confirmation"
